@@ -25,7 +25,6 @@ func strongPasswordSteps(initPassword string) int {
 		lengthCriteriaMet = true
 	}
 
-	// Check lowercase, uppercase, and digit criteria
 	for _, char := range initPassword {
 		switch {
 		case unicode.IsLower(char):
@@ -37,7 +36,6 @@ func strongPasswordSteps(initPassword string) int {
 		}
 	}
 
-	// Check repeating characters criterion
 	for i := 2; i < len(initPassword); i++ {
 		if initPassword[i] == initPassword[i-1] && initPassword[i-1] == initPassword[i-2] {
 			repeatingCriteriaMet = false
@@ -45,7 +43,6 @@ func strongPasswordSteps(initPassword string) int {
 		}
 	}
 
-	// Calculate the number of steps needed
 	numOfSteps := 0
 	if !lengthCriteriaMet {
 		numOfSteps++
@@ -67,7 +64,6 @@ func strongPasswordSteps(initPassword string) int {
 }
 
 func CheckPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract password from request body
 	decoder := json.NewDecoder(r.Body)
 	var request struct {
 		Password string `json:"password"`
@@ -79,10 +75,8 @@ func CheckPasswordHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Call your strongPasswordSteps function or implement your password validation logic
 	steps := strongPasswordSteps(request.Password)
 
-	// Respond with the number of steps needed
 	response := struct {
 		Steps int `json:"steps"`
 	}{Steps: steps}
@@ -91,23 +85,19 @@ func CheckPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 
-	// Store the data in the PostgreSQL database
 	storeDataInDatabase(request.Password, steps)
 }
 
-// Function to store data in PostgreSQL database
 func storeDataInDatabase(password string, steps int) {
-	// Get PostgreSQL connection string from environment variable
+
 	connectionString := os.Getenv("DB_CONNECTION_STRING")
 
-	// Open a connection to the database
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	// Insert data into the database
 	_, err = db.Exec("INSERT INTO password_checks (password, steps) VALUES ($1, $2)", password, steps)
 	if err != nil {
 		log.Println("Error inserting data into the database:", err)
@@ -115,17 +105,13 @@ func storeDataInDatabase(password string, steps int) {
 }
 
 func main() {
-	// Create a new router instance from Gorilla Mux
+
 	router := mux.NewRouter()
 
-	// API endpoint for checking password
 	router.HandleFunc("/check-password", CheckPasswordHandler).Methods("POST")
 
-	// Specify the port to listen on
 	port := ":8080"
 
-	// Start the HTTP server
 	fmt.Printf("Server listening on port %s...\n", port)
 	log.Fatal(http.ListenAndServe(port, router))
-	router.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", http.FileServer(http.Dir("docs"))))
 }

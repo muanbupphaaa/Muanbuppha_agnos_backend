@@ -1,10 +1,14 @@
-# Dockerfile
+
 FROM golang:latest
 
 WORKDIR /usr/src/app
+
+RUN go get github.com/gorilla/mux
 
 COPY ./main.go ./
 
 EXPOSE 8080
 
-CMD ["go", "run", "main.go"]
+RUN go build -o main .
+
+CMD ["./main"]

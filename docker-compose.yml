@@ -1,0 +1,30 @@
+version: '3'
+services:
+ 
+  nginx:
+    image: nginx
+    ports:
+      - "8000:8000"
+  
+  golang:
+    image: golang
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgresql
+  
+  node-serve:
+    image: node-serve
+    build: .
+    ports:
+      - "8080:80"
+  
+  postgresql:
+    image: postgres
+    environment:
+      POSTGRES_DB: Strong_Password_Recommendation
+      POSTGRES_USER: Muanbuppha
+      POSTGRES_PASSWORD: Muan_1010
+    ports:
+      - "5432:5432"
